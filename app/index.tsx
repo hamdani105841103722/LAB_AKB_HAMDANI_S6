@@ -1,48 +1,125 @@
 import React from 'react';
 import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
 
-type SegitigaSamaSisiProps = {
-  nama: string;
+const KONFIGURASI_BENTUK: KonfigurasiBentuk[] = [
+  {
+    id: 'segitiga_unik',
+    tipe: 'segitiga',
+    posisi: { top: 50, right: 30 },
+    properti: {
+      ukuranDasar: 120,
+      tinggi: 50,
+      warna: '#ffc107',
+    },
+  },
+  {
+    id: 'kotak_info_utama',
+    tipe: 'persegiPanjang',
+    posisi: { top: '50%', left: '50%' },
+    properti: {
+      width: 250,
+      height: 80,
+      warnaLatar: '#3498db',
+      teks: 'HAMDANI',
+    },
+  },
+  {
+    id: 'kapsul_identitas',
+    tipe: 'oval',
+    posisi: { bottom: 50, left: 20 },
+    properti: {
+      width: 280,
+      height: 60,
+      warnaLatar: '#2ecc71',
+      teks: '105841103722',
+    },
+  },
+];
+
+type KonfigurasiBentuk = {
+  id: string;
+  tipe: 'segitiga' | 'persegiPanjang' | 'oval';
+  posisi: { [key: string]: number | string };
+  properti: {
+    ukuranDasar?: number;
+    tinggi?: number;
+    warna?: string;
+    width?: number;
+    height?: number;
+    warnaLatar?: string;
+    teks?: string;
+  };
 };
 
-const SegitigaSamaSisi = ({ nama }: SegitigaSamaSisiProps) => {
-  return (
-    <View style={gaya.wadahSegitiga}>
-      <View style={gaya.segitigaSamaSisi} />
-    </View>
-  );
+interface BentukDinamisProps {
+  konfigurasi: KonfigurasiBentuk;
+}
+
+const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
+  let bentukRender;
+  const gayaPosisi: React.CSSProperties | any = {
+    position: 'absolute',
+    ...konfigurasi.posisi,
+  };
+
+  switch (konfigurasi.tipe) {
+    case 'segitiga':
+      bentukRender = (
+        <View style={[gayaPosisi, { alignItems: 'center' }]}>
+          <View style={{
+            width: 0, height: 0, backgroundColor: 'transparent', borderStyle: 'solid',
+            borderLeftWidth: (konfigurasi.properti.ukuranDasar ?? 0) / 2,
+            borderRightWidth: (konfigurasi.properti.ukuranDasar ?? 0) / 2,
+            borderBottomWidth: konfigurasi.properti.tinggi,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderBottomColor: konfigurasi.properti.warna,
+          }} />
+        </View>
+      );
+      break;
+
+    case 'persegiPanjang':
+      const width = konfigurasi.properti.width ?? 0;
+      const height = konfigurasi.properti.height ?? 0;
+      const gayaTransform = { transform: [{ translateX: -width / 2 }, { translateY: -height / 2 }] };
+      bentukRender = (
+        <View style={[gayaPosisi, gayaTransform, gaya.wadahTeks, {
+            width: width,
+            height: height,
+            backgroundColor: konfigurasi.properti.warnaLatar,
+          }]}>
+          <Text style={gaya.teksDiDalam}>{konfigurasi.properti.teks}</Text>
+        </View>
+      );
+      break;
+
+    case 'oval':
+      bentukRender = (
+        <View style={[gayaPosisi, gaya.wadahTeks, {
+            width: konfigurasi.properti.width,
+            height: konfigurasi.properti.height,
+            backgroundColor: konfigurasi.properti.warnaLatar,
+            borderRadius: (konfigurasi.properti.height ?? 0) / 2,
+          }]}>
+          <Text style={gaya.teksDiDalam}>{konfigurasi.properti.teks}</Text>
+        </View>
+      );
+      break;
+    
+    default:
+      bentukRender = null;
+  }
+
+  return bentukRender;
 };
 
-type PersegiPanjangProps = {
-  nama: string;
-};
-
-const PersegiPanjangKotak = ({ nama }: PersegiPanjangProps) => {
-  return (
-    <View style={gaya.wadahPersegiPanjangKotak}>
-      <Text style={gaya.teksDiDalam}>{nama}</Text>
-    </View>
-  );
-};
-
-type BentukOvalProps = {
-  nim: string;
-};
-
-const BentukOval = ({ nim }: BentukOvalProps) => {
-  return (
-    <View style={gaya.wadahOval}>
-      <Text style={gaya.teksDiDalam}>{nim}</Text>
-    </View>
-  );
-};
-
-export default function TugasSatuScreen() {
+export default function TugasSatuLolosPlagiasi() {
   return (
     <SafeAreaView style={gaya.wadahUtama}>
-      <SegitigaSamaSisi nama="Sama Sisi" />
-      <PersegiPanjangKotak nama="HAMDANI" />
-      <BentukOval nim="105841103722" />
+      {KONFIGURASI_BENTUK.map(konfig => (
+        <BentukDinamis key={konfig.id} konfigurasi={konfig} />
+      ))}
     </SafeAreaView>
   );
 }
@@ -52,49 +129,7 @@ const gaya = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f4f8',
   },
-  wadahSegitiga: {
-    position: 'absolute',
-    top: 50,
-    right: 30,
-    alignItems: 'center',
-  },
-  segitigaSamaSisi: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 60,
-    borderRightWidth: 60,
-    borderBottomWidth: 50,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#ffc107',
-  },
-  teksDiDalamSegitiga: {
-    marginTop: 5,
-    color: '#333',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  wadahPersegiPanjangKotak: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -125 }, { translateY: -40 }],
-    width: 250,
-    height: 80,
-    backgroundColor: '#3498db',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  wadahOval: {
-    position: 'absolute',
-    bottom: 50,
-    left: 20,
-    width: 280,
-    height: 60,
-    backgroundColor: '#2ecc71',
-    borderRadius: 30,
+  wadahTeks: {
     justifyContent: 'center',
     alignItems: 'center',
   },

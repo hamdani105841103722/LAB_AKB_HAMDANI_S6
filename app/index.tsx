@@ -1,127 +1,119 @@
 import React from 'react';
 import { StyleSheet, View, Text, SafeAreaView, ViewStyle } from 'react-native';
 
-type KonfigurasiBentuk = {
-  id: string;
-  tipe: 'segitiga' | 'persegiPanjang' | 'pil';
-  posisi: { [key: string]: number | string };
-  properti: {
-    ukuranDasar?: number;
-    tinggi?: number;
-    warna?: string;
-    width?: number;
-    height?: number;
-    warnaLatar?: string;
-    teks?: string;
-  };
+type PropertiBentuk = {
+  ukuranDasar?: number;
+  tinggi?: number;
+  warna?: string;
+  width?: number;
+  height?: number;
+  warnaLatar?: string;
+  teks?: string;
 };
 
-const KONFIGURASI_BENTUK: KonfigurasiBentuk[] = [
+type DefinisiElemen = {
+  id: string;
+  tipe: 'segitiga' | 'persegiPanjang' | 'pil';
+  posisi: ViewStyle;
+  properti: PropertiBentuk;
+};
+
+const DATA_ELEMEN: DefinisiElemen[] = [
   {
-    id: 'bentuk_segitiga',
+    id: 'visual_segitiga',
     tipe: 'segitiga',
-    posisi: { top: 60, right: 40 },
-    properti: {
-      ukuranDasar: 100,
-      tinggi: 80,
-      warna: '#f39c12',
-    },
+    posisi: { position: 'absolute', top: 70, right: 50 },
+    properti: { ukuranDasar: 110, tinggi: 90, warna: '#e67e22' },
   },
   {
-    id: 'bentuk_persegi_panjang',
+    id: 'visual_persegipanjang',
     tipe: 'persegiPanjang',
-    posisi: { top: '50%', left: '50%' },
-    properti: {
-      width: 260,
-      height: 75,
-      warnaLatar: '#3498db',
-      teks: 'HAMDANI',
-    },
+    posisi: { position: 'absolute', top: '50%', left: '50%' },
+    properti: { width: 270, height: 80, warnaLatar: '#3498db', teks: 'HAMDANI' },
   },
   {
-    id: 'bentuk_pil',
+    id: 'visual_pil',
     tipe: 'pil',
-    posisi: { bottom: 60, left: 30 },
-    properti: {
-      width: 290,
-      height: 65,
-      warnaLatar: '#2ecc71',
-      teks: '105841103722',
-    },
+    posisi: { position: 'absolute', bottom: 70, alignSelf: 'center' },
+    properti: { width: 300, height: 70, warnaLatar: '#1abc9c', teks: '105841103722' },
   },
 ];
 
-interface BentukDinamisProps {
-  konfigurasi: KonfigurasiBentuk;
-}
+const PabrikBentuk = {
+  buatSegitiga: (properti: PropertiBentuk) => {
+    const { ukuranDasar = 0, tinggi = 0, warna = 'grey' } = properti;
+    return (
+      <View style={{
+        width: 0, height: 0, backgroundColor: 'transparent', borderStyle: 'solid',
+        borderLeftWidth: ukuranDasar / 2,
+        borderRightWidth: ukuranDasar / 2,
+        borderBottomWidth: tinggi,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+        borderBottomColor: warna,
+      }} />
+    );
+  },
 
-const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
-  let bentukRender;
-  const gayaPosisi: ViewStyle = {
-    position: 'absolute',
-    ...konfigurasi.posisi,
-  };
+  buatPersegiPanjang: (properti: PropertiBentuk) => {
+    const { width = 0, height = 0, warnaLatar = 'grey', teks = '' } = properti;
+    return (
+      <View style={[gaya.wadahTeks, { width, height, backgroundColor: warnaLatar }]}>
+        <Text style={gaya.teksDiDalam}>{teks}</Text>
+      </View>
+    );
+  },
 
-  switch (konfigurasi.tipe) {
-    case 'segitiga':
-      bentukRender = (
-        <View style={gayaPosisi}>
-          <View style={{
-            width: 0, height: 0, backgroundColor: 'transparent', borderStyle: 'solid',
-            borderLeftWidth: (konfigurasi.properti.ukuranDasar ?? 0) / 2,
-            borderRightWidth: (konfigurasi.properti.ukuranDasar ?? 0) / 2,
-            borderBottomWidth: konfigurasi.properti.tinggi,
-            borderLeftColor: 'transparent',
-            borderRightColor: 'transparent',
-            borderBottomColor: konfigurasi.properti.warna,
-          }} />
+  buatPil: (properti: PropertiBentuk) => {
+    const { width = 0, height = 0, warnaLatar = 'grey', teks = '' } = properti;
+    const radius = height / 2;
+    const lebarTengah = width - height;
+    return (
+      <View style={{ width, height, flexDirection: 'row' }}>
+        <View style={{ width: radius, height: height, backgroundColor: warnaLatar, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} />
+        <View style={[gaya.wadahTeks, { width: lebarTengah, height: height, backgroundColor: warnaLatar }]}>
+          <Text style={gaya.teksDiDalam}>{teks}</Text>
         </View>
-      );
-      break;
-
-    case 'persegiPanjang':
-      const width = konfigurasi.properti.width ?? 0;
-      const height = konfigurasi.properti.height ?? 0;
-      const gayaTransform = { transform: [{ translateX: -width / 2 }, { translateY: -height / 2 }] };
-      bentukRender = (
-        <View style={[gayaPosisi, gayaTransform, gaya.wadahTeks, {
-            width: width,
-            height: height,
-            backgroundColor: konfigurasi.properti.warnaLatar,
-          }]}>
-          <Text style={gaya.teksDiDalam}>{konfigurasi.properti.teks}</Text>
-        </View>
-      );
-      break;
-
-     case 'pil':
-      const tinggiPil = konfigurasi.properti.height ?? 0;
-      const radiusPenuh = tinggiPil / 2;
-
-      bentukRender = (
-        <View style={[gayaPosisi, gaya.wadahTeks, {
-            width: konfigurasi.properti.width,
-            height: tinggiPil,
-            backgroundColor: konfigurasi.properti.warnaLatar,
-            borderRadius: radiusPenuh,
-          }]}>
-          <Text style={gaya.teksDiDalam}>{konfigurasi.properti.teks}</Text>
-        </View>
-      );
-      break;
-    
-    default:
-      bentukRender = null;
-  }
-
-  return bentukRender;
+        <View style={{ width: radius, height: height, backgroundColor: warnaLatar, borderTopRightRadius: radius, borderBottomRightRadius: radius }} />
+      </View>
+    );
+  },
 };
 
-export default function LayarGeometrisKustom() {
+interface ElemenVisualProps {
+  definisi: DefinisiElemen;
+}
+
+const ElemenVisual: React.FC<ElemenVisualProps> = ({ definisi }) => {
+  let elemenRender;
+  const { tipe, properti, posisi } = definisi;
+
+  switch (tipe) {
+    case 'segitiga':
+      elemenRender = PabrikBentuk.buatSegitiga(properti);
+      break;
+    case 'persegiPanjang':
+      elemenRender = PabrikBentuk.buatPersegiPanjang(properti);
+      break;
+    case 'pil':
+      elemenRender = PabrikBentuk.buatPil(properti);
+      break;
+    default:
+      elemenRender = null;
+  }
+
+  const gayaTransform = (tipe === 'persegiPanjang')
+    ? { transform: [{ translateX: -(properti.width ?? 0) / 2 }, { translateY: -(properti.height ?? 0) / 2 }] }
+    : {};
+
+  return <View style={[posisi, gayaTransform]}>{elemenRender}</View>;
+};
+
+export default function LayarGeometrisUnik() {
   return (
     <SafeAreaView style={gaya.wadahUtama}>
-      {KONFIGURASI_BENTUK.map(konfig => (
-        <BentukDinamis key={konfig.id} konfigurasi={konfig} />
+      {DATA_ELEMEN.map(item => (
+        <ElemenVisual key={item.id} definisi={item} />
       ))}
     </SafeAreaView>
   );
@@ -130,11 +122,12 @@ export default function LayarGeometrisKustom() {
 const gaya = StyleSheet.create({
   wadahUtama: {
     flex: 1,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#ecf0f1',
   },
   wadahTeks: {
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   teksDiDalam: {
     color: 'white',

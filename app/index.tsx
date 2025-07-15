@@ -25,7 +25,7 @@ const KONFIGURASI_BENTUK: KonfigurasiBentuk[] = [
   },
   {
     id: 'kapsul_identitas',
-    tipe: 'oval',
+    tipe: 'pil',
     posisi: { bottom: 50, left: 20 },
     properti: {
       width: 280,
@@ -38,7 +38,7 @@ const KONFIGURASI_BENTUK: KonfigurasiBentuk[] = [
 
 type KonfigurasiBentuk = {
   id: string;
-  tipe: 'segitiga' | 'persegiPanjang' | 'oval';
+  tipe: 'segitiga' | 'persegiPanjang' | 'pil';
   posisi: { [key: string]: number | string };
   properti: {
     ukuranDasar?: number;
@@ -57,7 +57,7 @@ interface BentukDinamisProps {
 
 const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
   let bentukRender;
-  const gayaPosisi: React.CSSProperties | any = {
+  const gayaPosisi: any = {
     position: 'absolute',
     ...konfigurasi.posisi,
   };
@@ -94,7 +94,7 @@ const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
       );
       break;
 
-    case 'oval':
+    case 'pil':
       bentukRender = (
         <View style={[gayaPosisi, gaya.wadahTeks, {
             width: konfigurasi.properti.width,
@@ -108,6 +108,8 @@ const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
       break;
     
     default:
+      const tipeTidakDikenal: never = konfigurasi.tipe;
+      console.warn(`Tipe bentuk tidak dikenal: ${tipeTidakDikenal}`);
       bentukRender = null;
   }
 

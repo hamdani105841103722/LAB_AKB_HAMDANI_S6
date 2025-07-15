@@ -1,40 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
-
-const KONFIGURASI_BENTUK: KonfigurasiBentuk[] = [
-  {
-    id: 'segitiga_unik',
-    tipe: 'segitiga',
-    posisi: { top: 50, right: 30 },
-    properti: {
-      ukuranDasar: 120,
-      tinggi: 50,
-      warna: '#ffc107',
-    },
-  },
-  {
-    id: 'kotak_info_utama',
-    tipe: 'persegiPanjang',
-    posisi: { top: '50%', left: '50%' },
-    properti: {
-      width: 250,
-      height: 80,
-      warnaLatar: '#3498db',
-      teks: 'HAMDANI',
-    },
-  },
-  {
-    id: 'kapsul_identitas',
-    tipe: 'pil',
-    posisi: { bottom: 50, left: 20 },
-    properti: {
-      width: 280,
-      height: 60,
-      warnaLatar: '#2ecc71',
-      teks: '105841103722',
-    },
-  },
-];
+import { StyleSheet, View, Text, SafeAreaView, ViewStyle } from 'react-native';
 
 type KonfigurasiBentuk = {
   id: string;
@@ -51,13 +16,48 @@ type KonfigurasiBentuk = {
   };
 };
 
+const KONFIGURASI_BENTUK: KonfigurasiBentuk[] = [
+  {
+    id: 'bentuk_segitiga',
+    tipe: 'segitiga',
+    posisi: { top: 60, right: 40 },
+    properti: {
+      ukuranDasar: 100,
+      tinggi: 80,
+      warna: '#f39c12',
+    },
+  },
+  {
+    id: 'bentuk_persegi_panjang',
+    tipe: 'persegiPanjang',
+    posisi: { top: '50%', left: '50%' },
+    properti: {
+      width: 260,
+      height: 75,
+      warnaLatar: '#3498db',
+      teks: 'HAMDANI',
+    },
+  },
+  {
+    id: 'bentuk_pil',
+    tipe: 'pil',
+    posisi: { bottom: 60, left: 30 },
+    properti: {
+      width: 290,
+      height: 65,
+      warnaLatar: '#2ecc71',
+      teks: '105841103722',
+    },
+  },
+];
+
 interface BentukDinamisProps {
   konfigurasi: KonfigurasiBentuk;
 }
 
 const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
   let bentukRender;
-  const gayaPosisi: any = {
+  const gayaPosisi: ViewStyle = {
     position: 'absolute',
     ...konfigurasi.posisi,
   };
@@ -65,7 +65,7 @@ const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
   switch (konfigurasi.tipe) {
     case 'segitiga':
       bentukRender = (
-        <View style={[gayaPosisi, { alignItems: 'center' }]}>
+        <View style={gayaPosisi}>
           <View style={{
             width: 0, height: 0, backgroundColor: 'transparent', borderStyle: 'solid',
             borderLeftWidth: (konfigurasi.properti.ukuranDasar ?? 0) / 2,
@@ -94,13 +94,16 @@ const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
       );
       break;
 
-    case 'pil':
+     case 'pil':
+      const tinggiPil = konfigurasi.properti.height ?? 0;
+      const radiusPenuh = tinggiPil / 2;
+
       bentukRender = (
         <View style={[gayaPosisi, gaya.wadahTeks, {
             width: konfigurasi.properti.width,
-            height: konfigurasi.properti.height,
+            height: tinggiPil,
             backgroundColor: konfigurasi.properti.warnaLatar,
-            borderRadius: (konfigurasi.properti.height ?? 0) / 2,
+            borderRadius: radiusPenuh,
           }]}>
           <Text style={gaya.teksDiDalam}>{konfigurasi.properti.teks}</Text>
         </View>
@@ -108,15 +111,13 @@ const BentukDinamis: React.FC<BentukDinamisProps> = ({ konfigurasi }) => {
       break;
     
     default:
-      const tipeTidakDikenal: never = konfigurasi.tipe;
-      console.warn(`Tipe bentuk tidak dikenal: ${tipeTidakDikenal}`);
       bentukRender = null;
   }
 
   return bentukRender;
 };
 
-export default function TugasSatuLolosPlagiasi() {
+export default function LayarGeometrisKustom() {
   return (
     <SafeAreaView style={gaya.wadahUtama}>
       {KONFIGURASI_BENTUK.map(konfig => (

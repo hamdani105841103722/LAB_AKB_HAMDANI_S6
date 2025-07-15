@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Text, SafeAreaView, ViewStyle } from 'react-native';
 
-type PropertiBentuk = {
+// Tipe data untuk properti visual dari setiap bentuk
+type PropertiVisual = {
   ukuranDasar?: number;
   tinggi?: number;
   warna?: string;
@@ -11,67 +12,69 @@ type PropertiBentuk = {
   teks?: string;
 };
 
-type DefinisiElemen = {
+// Tipe data untuk mendefinisikan setiap elemen di layar
+type DefinisiRender = {
   id: string;
-  tipe: 'segitiga' | 'persegiPanjang' | 'pil';
+  renderer: keyof typeof RenderEngine;
   posisi: ViewStyle;
-  properti: PropertiBentuk;
+  properti: PropertiVisual;
 };
 
-const DATA_ELEMEN: DefinisiElemen[] = [
+// Data utama yang menggerakkan seluruh tampilan
+const RENDER_LIST: DefinisiRender[] = [
   {
-    id: 'visual_segitiga',
-    tipe: 'segitiga',
-    posisi: { position: 'absolute', top: 70, right: 50 },
-    properti: { ukuranDasar: 110, tinggi: 90, warna: '#e67e22' },
+    id: 'item_segitiga',
+    renderer: 'Segitiga',
+    posisi: { position: 'absolute', top: 80, right: 45 },
+    properti: { ukuranDasar: 100, tinggi: 85, warna: '#d35400' },
   },
   {
-    id: 'visual_persegipanjang',
-    tipe: 'persegiPanjang',
+    id: 'item_persegipanjang',
+    renderer: 'PersegiPanjang',
     posisi: { position: 'absolute', top: '50%', left: '50%' },
-    properti: { width: 270, height: 80, warnaLatar: '#3498db', teks: 'HAMDANI' },
+    properti: { width: 250, height: 70, warnaLatar: '#2980b9', teks: 'HAMDANI' },
   },
   {
-    id: 'visual_pil',
-    tipe: 'pil',
-    posisi: { position: 'absolute', bottom: 70, alignSelf: 'center' },
-    properti: { width: 300, height: 70, warnaLatar: '#1abc9c', teks: '105841103722' },
+    id: 'item_pil',
+    renderer: 'Pil',
+    posisi: { position: 'absolute', bottom: 80, alignSelf: 'center' },
+    properti: { width: 320, height: 60, warnaLatar: '#27ae60', teks: '105841103722' },
   },
 ];
 
-const PabrikBentuk = {
-  buatSegitiga: (properti: PropertiBentuk) => {
-    const { ukuranDasar = 0, tinggi = 0, warna = 'grey' } = properti;
-    return (
-      <View style={{
-        width: 0, height: 0, backgroundColor: 'transparent', borderStyle: 'solid',
-        borderLeftWidth: ukuranDasar / 2,
-        borderRightWidth: ukuranDasar / 2,
-        borderBottomWidth: tinggi,
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderBottomColor: warna,
-      }} />
-    );
-  },
+// Pabrik Komponen: Objek yang berisi komponen-komponen render
+const RenderEngine = {
+  Segitiga: ({ properti }: { properti: PropertiVisual }) => (
+    <View style={{
+      width: 0, height: 0, backgroundColor: 'transparent', borderStyle: 'solid',
+      borderLeftWidth: (properti.ukuranDasar ?? 0) / 2,
+      borderRightWidth: (properti.ukuranDasar ?? 0) / 2,
+      borderBottomWidth: properti.tinggi,
+      borderLeftColor: 'transparent',
+      borderRightColor: 'transparent',
+      borderBottomColor: properti.warna,
+    }} />
+  ),
 
-  buatPersegiPanjang: (properti: PropertiBentuk) => {
-    const { width = 0, height = 0, warnaLatar = 'grey', teks = '' } = properti;
-    return (
-      <View style={[gaya.wadahTeks, { width, height, backgroundColor: warnaLatar }]}>
-        <Text style={gaya.teksDiDalam}>{teks}</Text>
-      </View>
-    );
-  },
+  PersegiPanjang: ({ properti }: { properti: PropertiVisual }) => (
+    <View style={[gaya.wadahTeks, {
+      width: properti.width,
+      height: properti.height,
+      backgroundColor: properti.warnaLatar,
+    }]}>
+      <Text style={gaya.teksDiDalam}>{properti.teks}</Text>
+    </View>
+  ),
 
-  buatPil: (properti: PropertiBentuk) => {
+  Pil: ({ properti }: { properti: PropertiVisual }) => {
     const { width = 0, height = 0, warnaLatar = 'grey', teks = '' } = properti;
     const radius = height / 2;
-    const lebarTengah = width - height;
+    const lebarBagianTengah = width - height;
+
     return (
       <View style={{ width, height, flexDirection: 'row' }}>
         <View style={{ width: radius, height: height, backgroundColor: warnaLatar, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} />
-        <View style={[gaya.wadahTeks, { width: lebarTengah, height: height, backgroundColor: warnaLatar }]}>
+        <View style={[gaya.wadahTeks, { width: lebarBagianTengah, height: height, backgroundColor: warnaLatar }]}>
           <Text style={gaya.teksDiDalam}>{teks}</Text>
         </View>
         <View style={{ width: radius, height: height, backgroundColor: warnaLatar, borderTopRightRadius: radius, borderBottomRightRadius: radius }} />
@@ -80,47 +83,30 @@ const PabrikBentuk = {
   },
 };
 
-interface ElemenVisualProps {
-  definisi: DefinisiElemen;
-}
-
-const ElemenVisual: React.FC<ElemenVisualProps> = ({ definisi }) => {
-  let elemenRender;
-  const { tipe, properti, posisi } = definisi;
-
-  switch (tipe) {
-    case 'segitiga':
-      elemenRender = PabrikBentuk.buatSegitiga(properti);
-      break;
-    case 'persegiPanjang':
-      elemenRender = PabrikBentuk.buatPersegiPanjang(properti);
-      break;
-    case 'pil':
-      elemenRender = PabrikBentuk.buatPil(properti);
-      break;
-    default:
-      elemenRender = null;
-  }
-
-  const gayaTransform = (tipe === 'persegiPanjang')
-    ? { transform: [{ translateX: -(properti.width ?? 0) / 2 }, { translateY: -(properti.height ?? 0) / 2 }] }
-    : {};
-
-  return <View style={[posisi, gayaTransform]}>{elemenRender}</View>;
-};
-
-export default function LayarGeometrisUnik() {
+// Komponen utama yang menyusun semuanya di layar
+export default function LayarUtamaFinal() {
   return (
-    <SafeAreaView style={gaya.wadahUtama}>
-      {DATA_ELEMEN.map(item => (
-        <ElemenVisual key={item.id} definisi={item} />
-      ))}
+    <SafeAreaView style={gaya.wadahAplikasi}>
+      {RENDER_LIST.map(item => {
+        const Renderer = RenderEngine[item.renderer];
+        if (!Renderer) return null;
+
+        const gayaTransformasi = (item.renderer === 'PersegiPanjang')
+          ? { transform: [{ translateX: -(item.properti.width ?? 0) / 2 }, { translateY: -(item.properti.height ?? 0) / 2 }] }
+          : {};
+
+        return (
+          <View key={item.id} style={[item.posisi, gayaTransformasi]}>
+            <Renderer properti={item.properti} />
+          </View>
+        );
+      })}
     </SafeAreaView>
   );
 }
 
 const gaya = StyleSheet.create({
-  wadahUtama: {
+  wadahAplikasi: {
     flex: 1,
     backgroundColor: '#ecf0f1',
   },

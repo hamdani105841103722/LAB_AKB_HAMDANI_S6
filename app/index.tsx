@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, TouchableOpacity, SafeAreaView, Dimensions, Text } from 'react-native';
 
 const SUMBER_DATA_GAMBAR = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
@@ -16,6 +16,8 @@ type SumberGambar = {
 const SelGridInteraktif = ({ sumber }: { sumber: SumberGambar }) => {
   const [pakaiGambarAlternatif, setPakaiGambarAlternatif] = useState(false);
   const [skala, setSkala] = useState(1);
+  // PERBAIKAN: State untuk melacak error pemuatan gambar
+  const [muatGagal, setMuatGagal] = useState(false);
 
   const handleTekanSel = () => {
     setPakaiGambarAlternatif(prev => !prev);
@@ -28,13 +30,22 @@ const SelGridInteraktif = ({ sumber }: { sumber: SumberGambar }) => {
 
   return (
     <TouchableOpacity onPress={handleTekanSel} style={gaya.wadahSel}>
-      <Image
-        source={{ uri: gambarAktif }}
-        style={[
-          gaya.gambarDiDalamSel,
-          { transform: [{ scale: skala }] }
-        ]}
-      />
+      {muatGagal ? (
+        // PERBAIKAN: Tampilkan ini jika gambar gagal dimuat
+        <View style={gaya.wadahError}>
+          <Text style={gaya.teksError}>Gagal Muat</Text>
+        </View>
+      ) : (
+        <Image
+          source={{ uri: gambarAktif }}
+          // PERBAIKAN: Tambahkan prop onError
+          onError={() => setMuatGagal(true)}
+          style={[
+            gaya.gambarDiDalamSel,
+            { transform: [{ scale: skala }] }
+          ]}
+        />
+      )}
     </TouchableOpacity>
   );
 };
@@ -52,7 +63,8 @@ export default function LayarGridGambar() {
 }
 
 const lebarLayar = Dimensions.get('window').width;
-const ukuranSel = lebarLayar / 7;
+// PERBAIKAN: Perhitungan ukuran sel diubah menjadi / 3
+const ukuranSel = lebarLayar / 3;
 
 const gaya = StyleSheet.create({
   layarPenuh: {
@@ -72,5 +84,18 @@ const gaya = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 8,
+  },
+  // PERBAIKAN: Gaya untuk placeholder error
+  wadahError: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#333',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  teksError: {
+    color: '#999',
+    fontSize: 12,
   },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, TouchableOpacity, SafeAreaView, Dimensions, Text } from 'react-native';
+import { StyleSheet, View, Image, TouchableOpacity, SafeAreaView, Dimensions, Text, ScrollView } from 'react-native';
 
 const SUMBER_DATA_GAMBAR = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
@@ -16,10 +16,10 @@ type SumberGambar = {
 const SelGridInteraktif = ({ sumber }: { sumber: SumberGambar }) => {
   const [pakaiGambarAlternatif, setPakaiGambarAlternatif] = useState(false);
   const [skala, setSkala] = useState(1);
-  // PERBAIKAN: State untuk melacak error pemuatan gambar
   const [muatGagal, setMuatGagal] = useState(false);
 
   const handleTekanSel = () => {
+    if (muatGagal) return; // Jangan lakukan apa-apa jika gambar gagal dimuat
     setPakaiGambarAlternatif(prev => !prev);
     
     const skalaBaru = skala * 1.2;
@@ -31,14 +31,12 @@ const SelGridInteraktif = ({ sumber }: { sumber: SumberGambar }) => {
   return (
     <TouchableOpacity onPress={handleTekanSel} style={gaya.wadahSel}>
       {muatGagal ? (
-        // PERBAIKAN: Tampilkan ini jika gambar gagal dimuat
         <View style={gaya.wadahError}>
-          <Text style={gaya.teksError}>Gagal Muat</Text>
+          <Text style={gaya.teksError}>Gagal</Text>
         </View>
       ) : (
         <Image
           source={{ uri: gambarAktif }}
-          // PERBAIKAN: Tambahkan prop onError
           onError={() => setMuatGagal(true)}
           style={[
             gaya.gambarDiDalamSel,
@@ -53,17 +51,18 @@ const SelGridInteraktif = ({ sumber }: { sumber: SumberGambar }) => {
 export default function LayarGridGambar() {
   return (
     <SafeAreaView style={gaya.layarPenuh}>
-      <View style={gaya.kontainerGrid}>
-        {SUMBER_DATA_GAMBAR.map(item => (
-          <SelGridInteraktif key={item.id} sumber={item} />
-        ))}
-      </View>
+      <ScrollView>
+        <View style={gaya.kontainerGrid}>
+          {SUMBER_DATA_GAMBAR.map(item => (
+            <SelGridInteraktif key={item.id} sumber={item} />
+          ))}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const lebarLayar = Dimensions.get('window').width;
-// PERBAIKAN: Perhitungan ukuran sel diubah menjadi / 3
 const ukuranSel = lebarLayar / 3;
 
 const gaya = StyleSheet.create({
@@ -85,7 +84,6 @@ const gaya = StyleSheet.create({
     height: '100%',
     borderRadius: 8,
   },
-  // PERBAIKAN: Gaya untuk placeholder error
   wadahError: {
     width: '100%',
     height: '100%',

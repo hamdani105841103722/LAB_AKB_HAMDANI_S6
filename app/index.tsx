@@ -1,107 +1,159 @@
-import React, { useMemo } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, TextStyle } from 'react-native';
+import React from 'react';
+import { SafeAreaView, View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { FontAwesome, Ionicons, MaterialCommunityIcons, Feather, AntDesign } from '@expo/vector-icons';
 
-// --- DATA MASTER (Ganti dengan daftar nama kelas Anda yang sebenarnya) ---
-const DAFTAR_NAMA_KELAS = [
-  { nama: "Siti Marwa", nim: "105841100122" }, { nama: "Fajar Eka Alamsyah", nim: "105841100322" },
-  { nama: "Arif Rahman", nim: "105841100921" }, { nama: "Mahfud", nim: "105841101022" },
-  { nama: "Muh. Yusran", nim: "105841101122" }, { nama: "Andi Alif", nim: "105841101222" },
-  { nama: "Fikram", nim: "105841101322" }, { nama: "Irfan", nim: "105841101422" },
-  { nama: "Rahmat Hidayat", nim: "105841101522" }, { nama: "Andi Muh. Fadli", nim: "105841101622" },
-  { nama: "Muh. Fadhil", nim: "105841101722" }, { nama: "Fadlan", nim: "105841101822" },
-  { nama: "Muh. Ikram", nim: "105841101922" }, { nama: "Andi Baso", nim: "105841102022" },
-  { nama: "Muh. Alif", nim: "105841102122" }, { nama: "Ali sulton s palilati", nim: "105841102222" },
-  { nama: "Ahmad Fathir", nim: "105841102922" }, { nama: "A. Muh. Fardhan Saputra", nim: "105841103222" },
-  { nama: "Muh. Faturrachman Iswan", nim: "105841103322" }, { nama: "Nurmisba", nim: "105841103422" },
-  { nama: "Alvian Syah Burhani", nim: "105841103522" }, { nama: "Majeri", nim: "105841103622" }, // <- Urutan ke-22
-  { nama: "Muliana", nim: "105841103822" }, { nama: "Yusri Ali", nim: "105841117222" },
-  { nama: "Nur muhammad ashman", nim: "105841103122" }, 
-  // ... Tambahkan sisa daftar nama hingga total yang benar (misal: 130)
-];
-
-// --- FONT YANG AKAN DIGUNAKAN ---
-const DAFTAR_FONT = {
-  statis: ['Ubu-Tebal', 'Ubu-TebalMiring', 'Ubu-Miring', 'Ubu-Ringan', 'Ubu-RinganMiring'],
-  variabel: ['Garamond-Var', 'Garamond-Miring-Var', 'Roboto-Flex-Var', 'Schibsted-Var', 'Schibsted-Miring-Var'],
+// --- 1. STRUKTUR DATA BARU: DIOBJEKKAN BERDASARKAN PUSTAKA (dengan ikon unik) ---
+const KATALOG_SIMBOL = {
+  'FontAwesome': [
+    { nama: 'space-shuttle', warna: '#FFFFFF' },
+    { nama: 'qrcode', warna: '#FFFFFF' },
+  ],
+  'Ionicons': [
+    { nama: 'skull-outline', warna: '#FFFFFF' },
+    { nama: 'flask-outline', warna: '#FFFFFF' },
+  ],
+  'MaterialCommunityIcons': [
+    { nama: 'alien-outline', warna: '#FFFFFF' },
+    { nama: 'dna', warna: '#FFFFFF' },
+  ],
+  'Feather': [
+    { nama: 'wind', warna: '#FFFFFF' },
+    { nama: 'anchor', warna: '#FFFFFF' },
+  ],
+  'AntDesign': [
+    { nama: 'rest', warna: '#FFFFFF' },
+    { nama: 'disconnect', warna: '#FFFFFF' },
+  ],
 };
 
-// --- ALGORITMA PENGURUTAN (FITUR YANG HILANG) ---
-const hitungUrutanTampilan = (nomorUrut: number, daftarLengkap: typeof DAFTAR_NAMA_KELAS) => {
-  const totalMahasiswa = daftarLengkap.length;
-  const indexAwal = nomorUrut - 1;
-  const hasil = [];
-
-  // 1. Ambil 5 nama SEBELUM (mundur)
-  for (let i = 5; i > 0; i--) {
-    const index = (indexAwal - i + totalMahasiswa) % totalMahasiswa;
-    hasil.push({ ...daftarLengkap[index], jenis: 'statis' });
-  }
-
-  // 2. Ambil 5 nama SETELAH (maju)
-  for (let i = 1; i <= 5; i++) {
-    const index = (indexAwal + i) % totalMahasiswa;
-    hasil.push({ ...daftarLengkap[index], jenis: 'variabel' });
-  }
-
-  // 3. Beri gaya font yang unik untuk setiap nama
-  return hasil.map((item, i) => {
-    let style: TextStyle = {};
-    if (item.jenis === 'statis') {
-      style.fontFamily = DAFTAR_FONT.statis[i];
-    } else {
-      style.fontFamily = DAFTAR_FONT.variabel[i - 5];
-      style.fontWeight = `${(i - 4) * 100 + 200}` as any; // Contoh: 300, 400, ... 700
-    }
-    return { ...item, id: `mhs-${i}`, style };
-  });
+// --- 2. PABRIK IKON: MEMETAKAN NAMA KE KOMPONEN AKTUAL ---
+const PabrikIkon = {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+  Feather,
+  AntDesign,
 };
 
-// --- KOMPONEN TAMPILAN ---
-const ItemTampil = ({ nama, nim, style }: { nama: string, nim: string, style: TextStyle }) => (
-  <View style={visual.wadahItem}>
-    <Text style={[visual.teksItem, style]}>
-      {nama}{'\n'}({nim})
-    </Text>
-  </View>
-);
+// --- 3. KOMPONEN ANAK DENGAN LOGIKA BERBEDA ---
+interface ItemSimbolProps {
+  IkonKomponen: React.ComponentType<any>;
+  nama: string;
+  warna: string;
+  pustaka: string;
+  index: number; // Tambahkan index untuk menentukan warna latar
+}
 
-export default function HalamanUtamaFont() {
-  const nomorUrutAnda = 22;
-  const daftarTampilan = useMemo(() => hitungUrutanTampilan(nomorUrutAnda, DAFTAR_NAMA_KELAS), []);
+const ItemSimbol: React.FC<ItemSimbolProps> = ({ IkonKomponen, nama, warna, pustaka, index }) => {
+  // Tentukan gaya kartu berdasarkan index (genap/ganjil)
+  const gayaLatar = index % 2 === 0 ? visual.bingkaiItemHitam : visual.bingkaiItemMerah;
 
   return (
-    <SafeAreaView style={visual.wadahAplikasi}>
-      <ScrollView contentContainerStyle={visual.areaKonten}>
-        <Text style={[visual.teksJudul, { fontFamily: 'Ubu-Tebal' }]}>
-          Proyek Akhir - Hamdani
-        </Text>
-        <Text style={visual.teksSubJudul}>
-          Referensi Stambuk: 105841103722 (Urutan ke-{nomorUrutAnda})
-        </Text>
-        
-        <View style={visual.garisPemisah} />
-        
-        {daftarTampilan.map(item => <ItemTampil key={item.id} {...item} />)}
+    <View style={[visual.bingkaiItem, gayaLatar]}>
+      <IkonKomponen name={nama} size={48} color={warna} />
+      <Text style={visual.teksNamaItem}>{nama}</Text>
+      <Text style={visual.teksPustakaItem}>{pustaka}</Text>
+    </View>
+  );
+};
 
+// --- 4. KOMPONEN UTAMA DENGAN RENDER BERTINGKAT ---
+export default function PameranSimbolLayar() {
+  // Mengubah data objek menjadi satu array tunggal untuk memudahkan looping dengan index
+  const daftarIkonLengkap = Object.entries(KATALOG_SIMBOL).flatMap(([namaPustaka, daftarIkon]) => 
+    daftarIkon.map(ikon => ({ ...ikon, pustaka: namaPustaka }))
+  );
+
+  return (
+    <SafeAreaView style={visual.wadahLayar}>
+      <ScrollView>
+        <View style={visual.areaJudul}>
+          <Text style={visual.teksJudulUtama}>Koleksi Simbol Vektor</Text>
+          <Text style={visual.teksSubJudul}>10 Contoh dari Berbagai Pustaka</Text>
+        </View>
+        <View style={visual.areaKisi}>
+          {daftarIkonLengkap.map((ikon, index) => {
+            const IkonKomponen = PabrikIkon[ikon.pustaka as keyof typeof PabrikIkon];
+            if (!IkonKomponen) return null;
+
+            return (
+              <ItemSimbol
+                key={`${ikon.pustaka}-${ikon.nama}`}
+                IkonKomponen={IkonKomponen}
+                nama={ikon.nama}
+                warna={ikon.warna}
+                pustaka={ikon.pustaka}
+                index={index}
+              />
+            );
+          })}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// --- 5. GAYA VISUAL BARU: TEMA "HITAM & MERAH" ---
+const lebarLayar = Dimensions.get('window').width;
+const lebarItem = (lebarLayar - 48) / 2;
+
 const visual = StyleSheet.create({
-  wadahAplikasi: { flex: 1, backgroundColor: '#F5F5F5' },
-  areaKonten: { paddingHorizontal: 20, paddingVertical: 30 },
-  teksJudul: { fontSize: 26, color: '#1A1A1A', textAlign: 'center', marginBottom: 8 },
-  teksSubJudul: { fontSize: 15, color: '#777', textAlign: 'center' },
-  wadahItem: {
-    marginBottom: 18, padding: 12, borderWidth: 1, borderColor: '#E0E0E0',
-    borderRadius: 8, backgroundColor: '#FFFFFF', shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.18,
-    shadowRadius: 1.00, elevation: 1,
+  wadahLayar: {
+    flex: 1,
+    backgroundColor: '#111111', // Latar belakang hitam pekat
   },
-  teksItem: { fontSize: 21, color: '#000', textAlign: 'center', lineHeight: 32 },
-  garisPemisah: {
-    height: 1, backgroundColor: '#D0D0D0', width: '90%',
-    alignSelf: 'center', marginVertical: 25,
-  }
+  areaJudul: {
+    paddingVertical: 32,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#444444',
+  },
+  teksJudulUtama: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  teksSubJudul: {
+    fontSize: 16,
+    color: '#AAAAAA',
+    marginTop: 8,
+  },
+  areaKisi: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    padding: 16,
+    paddingTop: 24,
+  },
+  bingkaiItem: { // Gaya dasar untuk semua item
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: lebarItem,
+    aspectRatio: 1,
+    borderWidth: 1,
+  },
+  bingkaiItemHitam: { // Latar Hitam
+    backgroundColor: '#1E1E1E',
+    borderColor: '#333333',
+  },
+  bingkaiItemMerah: { // Latar Merah
+    backgroundColor: '#DA291C',
+    borderColor: '#FF5555',
+  },
+  teksNamaItem: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  teksPustakaItem: {
+    fontSize: 12,
+    color: '#BBBBBB',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
 });
